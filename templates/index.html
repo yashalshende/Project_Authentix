@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AUTHENTIX | Deepfake Detection Prototype</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=4" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}?v=1" />
+  </head>
+  <body>
+    <div id="splash-screen" class="splash-screen">
+      <canvas id="splash-canvas"></canvas>
+      <div class="scanlines"></div>
+      
+      <div class="splash-content">
+        <div class="logo-container">
+          <div class="ring clockwise"></div>
+          <div class="ring anticlockwise"></div>
+          <div class="logo-text">AUTHENTIX</div>
+        </div>
+
+        <div class="stats-container">
+          <div class="stat-card">Reference-Calibrated</div>
+          <div class="stat-card">&lt; 2s Detection</div>
+          <div class="stat-card">Transparent Inference</div>
+        </div>
+
+        <div class="terminal">
+          <div class="log-line"></div>
+          <div class="progress-bar-container">
+            <div class="progress-bar"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hud corner top-left"></div>
+      <div class="hud corner top-right"></div>
+      <div class="hud corner bottom-left"></div>
+      <div class="hud corner bottom-right"></div>
+    </div>
+    <div class="bg-grid"></div>
+    
+    <nav class="main-nav">
+      <div class="nav-container">
+        <a href="/" class="nav-logo">
+          AUTHENTIX
+        </a>
+        <div class="nav-links">
+          <a href="/" class="nav-link active">Home</a>
+          <a href="/folders" class="nav-link">Folders</a>
+          <a href="/history" class="nav-link">History</a>
+          <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Theme">🌓</button>
+        </div>
+      </div>
+    </nav>
+    <header class="hero container">
+      <h1 style="font-family: Orbitron, sans-serif; letter-spacing: 0.3rem; margin-bottom:0;">AUTHENTIX</h1>
+      <span style="font-size: 0.95rem; color: var(--cyan); display:block; letter-spacing: 0.2rem; margin-top: 0.2rem; font-weight: 700; text-transform: uppercase;">A Deepfake Detection Model</span>
+      <p class="subtitle" style="margin-top: 0.8rem; font-size: 0.95rem; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.5;">Detects whether an image or video is real or AI-generated using advanced technology.</p>
+    </header>
+
+    <main class="container">
+      <section class="panel upload-panel">
+        <h2 style="color: var(--cyan); letter-spacing: 1px;">Upload Your Image or Video</h2>
+        <p style="color: var(--muted); font-size: 0.85rem;">Upload an image or video to check if it is real or fake. You will see a preview before analysis.</p>
+
+        <div id="drop-zone" class="drop-zone">
+          <input id="file-input" type="file" accept=".jpg,.jpeg,.png,.mp4,.mov,.avi" />
+          <div class="drop-content">
+            <span class="icon">⬆</span>
+            <p>Drag & drop a file here, or click to choose</p>
+          </div>
+        </div>
+        
+        <div class="mode-toggle">
+          <label style="color: var(--cyan); font-weight: 700; font-size: 0.85rem; letter-spacing: 1px;">ANALYSIS:</label>
+          <div class="toggle-switch">
+             <input type="radio" id="fast-mode" name="mode" value="fast" checked>
+             <label for="fast-mode">Fast</label>
+             <input type="radio" id="deep-mode" name="mode" value="deep">
+             <label for="deep-mode">Deep Sequence</label>
+          </div>
+        </div>
+
+        <div id="preview" class="preview hidden"></div>
+
+        <button id="analyze-btn" class="btn-primary" disabled>Analyze</button>
+        <p id="error-message" class="error-message"></p>
+
+        <div id="processing-overlay" class="processing-overlay hidden">
+          <div class="hud-center">
+             <div class="cyber-spinner"></div>
+             <div class="progress-info">
+                <span id="progress-percent">0%</span>
+             </div>
+          </div>
+          <div class="progress-bar-container">
+             <div id="dynamic-progress" class="progress-fill"></div>
+          </div>
+          <div id="progress-status" class="progress-status">> Initializing neural uplink...</div>
+
+          <div id="xai-module-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+               <div class="xai-module" data-method="Face Alignment"><span class="dot"></span> Face Alignment <small style="display:block; opacity: 0.6; font-size: 0.7rem;">Primary Crop</small></div>
+               <div class="xai-module" data-method="3x3 Region Scan"><span class="dot"></span> 3x3 Region Scan <small style="display:block; opacity: 0.6; font-size: 0.7rem;">Eyes Nose Mouth</small></div>
+               <div class="xai-module" data-method="Grad-CAM"><span class="dot"></span> Grad-CAM <small style="display:block; opacity: 0.6; font-size: 0.7rem;">Face Regions</small></div>
+               <div class="xai-module" data-method="Score-CAM"><span class="dot"></span> Score-CAM <small style="display:block; opacity: 0.6; font-size: 0.7rem;">Interaction Check</small></div>
+               <div class="xai-module" data-method="Integrated Gradients"><span class="dot"></span> Integ. Grads <small style="display:block; opacity: 0.6; font-size: 0.7rem;">Pixel Attribution</small></div>
+               <div class="xai-module" data-method="Occlusion Sensitivity"><span class="dot"></span> Occlusion <small style="display:block; opacity: 0.6; font-size: 0.7rem;">Robustness Check</small></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel result-panel">
+        <h2>Analysis Result Dashboard</h2>
+        <div id="result-empty" class="empty-state">AWAITING PAYLOAD INGESTION...</div>
+        <div id="result-card" class="result-card hidden"></div>
+      </section>
+
+      <section class="panel">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
+          <div>
+            <h2 style="color: var(--cyan); letter-spacing: 1px;">Folders Directory</h2>
+            <p style="color: var(--muted); font-size: 0.9rem; max-width: 640px;">
+              Open the integrated datasets directly from Authentix whenever you need to show them during a walkthrough.
+            </p>
+          </div>
+          <a href="/folders" class="btn-secondary" style="text-decoration:none;">Open Folders</a>
+        </div>
+
+        {% for dataset in datasets %}
+        <a href="{{ url_for('dataset_folder_page', dataset_slug=dataset.slug) }}" style="display:block; margin-top:1rem; text-decoration:none; color:inherit;">
+          <div style="background: var(--surface-tint); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; box-shadow: var(--card-shadow);">
+            <div style="display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
+              <div>
+                <div style="font-size:1rem; font-weight:800; color:var(--text);">{{ dataset.name }}</div>
+                <div style="margin-top:0.4rem; color:var(--muted); font-size:0.85rem;">{{ "{:,}".format(dataset.total_images) }} images stored in the project folders directory.</div>
+              </div>
+              <div style="color:var(--cyan); font-weight:700; font-size:0.9rem;">Open folder</div>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </section>
+
+      <!-- History moved to /history page -->
+
+      <section class="panel about-panel">
+        <h2 style="color: var(--cyan); letter-spacing: 1px; font-size: 1.1rem; text-transform: uppercase;">Neural Architecture Overview</h2>
+        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 1.5rem;">
+            <div style="flex: 1; min-width: 250px; background: var(--surface-tint); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--card-shadow);">
+                <strong style="color: var(--text); font-size: 1.2rem; display: block; margin-bottom: 0.7rem;">Visual Forensic Scan</strong>
+                <p style="color: var(--text); font-size: 1rem; margin: 0; line-height: 1.7; font-weight: 700;">Checks face structure, blending edges, and texture consistency across the media.</p>
+            </div>
+            <div style="flex: 1; min-width: 250px; background: var(--surface-tint); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--card-shadow);">
+                <strong style="color: var(--text); font-size: 1.2rem; display: block; margin-bottom: 0.7rem;">Sequence Consistency Check</strong>
+                <p style="color: var(--text); font-size: 1rem; margin: 0; line-height: 1.7; font-weight: 700;">Tracks whether facial evidence stays stable from frame to frame instead of changing unnaturally.</p>
+            </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="container" style="text-align: center; padding: 2rem 0 3rem; color: rgba(152, 165, 197, 0.4); font-size: 0.8rem; letter-spacing: 0.05rem;">
+        AUTHENTIX CYBER FORENSICS &copy; 2026<br>
+        Independently developed for academic media authentication and threat vector research.
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}?v=3"></script>
+  </body>
+</html>

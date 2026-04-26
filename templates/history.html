@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCAN HISTORY | AUTHENTIX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=3" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}?v=1" />
+    <style>
+        .history-grid-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .history-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .history-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow);
+            border-color: var(--cyan);
+        }
+        .h-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--bg);
+        }
+        .h-content {
+            padding: 1.2rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .h-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text);
+        }
+        .h-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .h-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .h-badge.deepfake { background: rgba(255, 77, 109, 0.15); color: var(--red); border: 1px solid var(--red); }
+        .h-badge.authentic { background: rgba(54, 227, 154, 0.15); color: var(--green); border: 1px solid var(--green); }
+        .h-badge.suspicious { background: rgba(255, 200, 87, 0.15); color: var(--amber); border: 1px solid var(--amber); }
+
+        .h-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .h-btn-del {
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .h-btn-del:hover { background: var(--red); border-color: var(--red); }
+
+        .empty-history {
+            text-align: center;
+            padding: 5rem 2rem;
+            background: var(--surface-tint);
+            border: 2px dashed var(--border);
+            border-radius: 20px;
+            color: var(--muted);
+        }
+    </style>
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+
+    <nav class="main-nav">
+      <div class="nav-container">
+        <a href="/" class="nav-logo">
+          AUTHENTIX
+        </a>
+        <div class="nav-links">
+          <a href="/" class="nav-link">Home</a>
+          <a href="/folders" class="nav-link">Folders</a>
+          <a href="/history" class="nav-link active">History</a>
+          <button id="theme-toggle" class="theme-toggle-btn">🌓</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container">
+      <header class="panel" style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
+        <div>
+            <h1 style="margin:0; font-family: Orbitron; font-size: 1.3rem; letter-spacing: 2px; color: var(--cyan);">SCAN ARCHIVE</h1>
+            <p style="margin: 0.3rem 0 0 0; color: var(--muted); font-size: 0.85rem;">Historical forensic evaluations stored on this device.</p>
+        </div>
+        <button id="clear-all-archive" class="btn-danger">Clear All History</button>
+      </header>
+
+      <div id="history-container" class="history-grid-view">
+          <!-- Dynamically populated -->
+          <div class="empty-history">ACCESSING HISTORICAL PAYLOADS...</div>
+      </div>
+    </main>
+
+    <footer class="container" style="text-align: center; padding: 2rem 0 3rem; color: rgba(152, 165, 197, 0.4); font-size: 0.8rem;">
+        AUTHENTIX FORENSIC ARCHIVE &copy; 2026
+    </footer>
+
+    <script>
+        // Inline Theme Toggle for immediate response
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('authentix-theme', theme);
+            const btn = document.getElementById('theme-toggle');
+            if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+        };
+        const currentTheme = localStorage.getItem('authentix-theme') || 'dark';
+        setTheme(currentTheme);
+
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+
+        async function loadHistory() {
+            const container = document.getElementById('history-container');
+            const res = await fetch('/api/history');
+            const data = await res.json();
+
+            if (!data.success || data.history.length === 0) {
+                container.innerHTML = `
+                <div class="empty-history" style="grid-column: 1/-1;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+                    <h3>No scans found in database.</h3>
+                    <p>Go to the home page to start a new neural analysis.</p>
+                    <a href="/" class="btn-primary" style="display: inline-block; margin-top: 1rem; text-decoration: none;">New Analysis</a>
+                </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.history.map(item => {
+                const verdict = String(item.verdict || 'REAL').toUpperCase();
+                const badgeClass = verdict === 'DEEPFAKE' ? 'deepfake' : 'authentic';
+                const thumbnail = item.thumbnail_path ? `/${item.thumbnail_path}` : '';
+                const confidence = Number(item.confidence || 0);
+                const fileType = String(item.file_type || '').toUpperCase();
+                // Format timestamp nicely
+                let timeLabel = '';
+                if (item.upload_date) {
+                    try {
+                        const d = new Date(item.upload_date);
+                        timeLabel = d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) + ' ' + d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+                    } catch(e) { timeLabel = item.upload_date; }
+                }
+                return `
+                <div class="history-card">
+                    <div class="h-actions">
+                        <button class="h-btn-del" onclick="deleteItem('${item.id}')" title="Delete record">🗑</button>
+                    </div>
+                    ${thumbnail ? `<img src="${thumbnail}" class="h-thumb" alt="Result Map" />` : `<div class="h-thumb" style="display:flex; align-items:center; justify-content:center; color: var(--muted); font-size: 0.75rem; letter-spacing:1px;">NO HEATMAP</div>`}
+                    <div class="h-content">
+                        <div class="h-name" title="${item.file_name}">${item.file_name}</div>
+                        <div style="font-size: 0.72rem; color: var(--muted); margin-bottom: 0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                            <span style="background: rgba(0,229,255,0.08); border:1px solid var(--border); padding:2px 8px; border-radius:4px;">${fileType}</span>
+                            ${timeLabel ? `<span>${timeLabel}</span>` : ''}
+                        </div>
+                        <div class="h-meta">
+                            <span class="h-badge ${badgeClass}">${verdict}</span>
+                            <span style="font-size: 0.8rem; font-weight: bold; color: var(--cyan);">${confidence.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteItem(id) {
+            if (!confirm('Permanently remove this forensic record?')) return;
+            await fetch(`/api/history/${id}`, { method: 'DELETE' });
+            loadHistory();
+        }
+
+        document.getElementById('clear-all-archive').addEventListener('click', async () => {
+            if (!confirm('ERASE ALL FORENSIC HISTORY? This cannot be undone.')) return;
+            await fetch('/api/history/clear', { method: 'POST' });
+            loadHistory();
+        });
+
+        loadHistory();
+    </script>
+  </body>
+</html>

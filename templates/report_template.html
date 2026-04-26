@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Authentix Forensic Report - {{ report.file_name }}</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; color: #122033; margin: 0; background: #edf2fb; }
+        .page { width: 210mm; min-height: 297mm; padding: 18mm; margin: 10mm auto; background: #fff; box-shadow: 0 8px 24px rgba(18, 32, 51, 0.12); box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 14px; border-bottom: 3px solid #10253f; }
+        .title { font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #0c2240; }
+        .subtitle { margin-top: 4px; font-size: 13px; color: #56708d; }
+        .verdict-card { text-align: right; }
+        .verdict-card .label { font-size: 11px; text-transform: uppercase; color: #6a809a; letter-spacing: 1px; }
+        .verdict-card .value { margin-top: 6px; font-size: 26px; font-weight: 800; }
+        .value.real { color: #0f9157; }
+        .value.deepfake { color: #c92f52; }
+        .section { margin-top: 24px; }
+        .section-title { font-size: 15px; font-weight: 800; color: #0c2240; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #dbe5f0; font-size: 13px; vertical-align: top; }
+        th { width: 28%; color: #5e738c; font-weight: 700; }
+        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .metric-card { padding: 12px; border: 1px solid #dbe5f0; border-radius: 10px; background: #f8fbff; }
+        .metric-label { font-size: 11px; text-transform: uppercase; color: #607891; letter-spacing: 1px; }
+        .metric-value { margin-top: 4px; font-size: 20px; font-weight: 800; color: #0c2240; }
+        .metric-copy { margin-top: 6px; color: #526980; font-size: 12px; line-height: 1.5; }
+        .visual-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+        .visual-card { border: 1px solid #dbe5f0; border-radius: 10px; padding: 10px; background: #fbfdff; }
+        .visual-card h4 { margin: 0 0 8px; font-size: 12px; color: #0c2240; text-transform: uppercase; letter-spacing: 1px; }
+        .visual-card img { width: 100%; max-height: 260px; object-fit: contain; border-radius: 8px; background: #09121d; }
+        .list { margin: 0; padding-left: 18px; color: #526980; font-size: 12px; line-height: 1.6; }
+        .footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #dbe5f0; color: #6f849a; font-size: 11px; text-align: center; }
+        @media print {
+            body { background: transparent; }
+            .page { margin: 0; box-shadow: none; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <div>
+                <div class="title">AUTHENTIX</div>
+                <div class="subtitle">Official forensic deepfake analysis report</div>
+            </div>
+            <div class="verdict-card">
+                <div class="label">Final Verdict</div>
+                <div class="value {{ 'deepfake' if report.verdict == 'DEEPFAKE' else 'real' }}">{{ report.verdict }}</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Media Identification</div>
+            <table>
+                <tr><th>Scan Reference ID</th><td>{{ report.job_id }}</td></tr>
+                <tr><th>File Name</th><td>{{ report.file_name }}</td></tr>
+                <tr><th>File Type</th><td>{{ report.file_type }}</td></tr>
+                <tr><th>Upload Timestamp</th><td>{{ report.upload_date }}</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Detection Results</div>
+            <table>
+                <tr><th>Confidence Score</th><td>{{ "%.2f"|format(report.confidence or 0) }}%</td></tr>
+                <tr><th>Deepfake Type</th><td>{{ report.deepfake_type }}</td></tr>
+                <tr><th>Forensic Explanation</th><td>{{ report.explanation }}</td></tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Face Swap Evidence</div>
+            <div class="grid">
+                <div class="metric-card">
+                    <div class="metric-label">Face Swap Score</div>
+                    <div class="metric-value">{{ "%.2f"|format(report.faceswap_score or 0) }}%</div>
+                    <div class="metric-copy">{{ report.faceswap_analysis.summary if report.faceswap_analysis else "Dedicated face-swap evidence was not available for this run." }}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Strongest Frame</div>
+                    <div class="metric-value">
+                        {% if report.faceswap_analysis and report.faceswap_analysis.strongest_frame %}
+                            Frame {{ report.faceswap_analysis.strongest_frame.frame_number }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                    <div class="metric-copy">
+                        {% if report.faceswap_analysis and report.faceswap_analysis.strongest_frame %}
+                            {{ report.faceswap_analysis.strongest_frame.timestamp }}
+                        {% else %}
+                            No frame-specific face-swap anchor was recorded.
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Identity Consistency</div>
+                    <div class="metric-value">{{ "%.2f"|format(report.faceswap_analysis.identity_consistency_score if report.faceswap_analysis else 0) }}%</div>
+                    <div class="metric-copy">{{ report.faceswap_analysis.embedding_source if report.faceswap_analysis else "Unavailable" }}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Boundary / Landmark Signals</div>
+                    <div class="metric-copy">
+                        Boundary anomaly: {{ "%.2f"|format(report.faceswap_analysis.boundary_anomaly_score if report.faceswap_analysis else 0) }}%<br>
+                        Landmark mismatch: {{ "%.2f"|format(report.faceswap_analysis.landmark_mismatch_score if report.faceswap_analysis else 0) }}%<br>
+                        Texture mismatch: {{ "%.2f"|format(report.faceswap_analysis.texture_mismatch_score if report.faceswap_analysis else 0) }}%
+                    </div>
+                </div>
+            </div>
+            <div class="visual-grid">
+                {% if report.faceswap_artifacts.identity_overlay_url %}
+                <div class="visual-card">
+                    <h4>Identity Overlay</h4>
+                    <img src="/{{ report.faceswap_artifacts.identity_overlay_url }}" alt="Identity overlay">
+                </div>
+                {% endif %}
+                {% if report.faceswap_artifacts.boundary_overlay_url %}
+                <div class="visual-card">
+                    <h4>Boundary Overlay</h4>
+                    <img src="/{{ report.faceswap_artifacts.boundary_overlay_url }}" alt="Boundary overlay">
+                </div>
+                {% endif %}
+                {% if report.faceswap_artifacts.landmark_overlay_url %}
+                <div class="visual-card">
+                    <h4>Landmark Overlay</h4>
+                    <img src="/{{ report.faceswap_artifacts.landmark_overlay_url }}" alt="Landmark overlay">
+                </div>
+                {% endif %}
+                {% if report.heatmap_url %}
+                <div class="visual-card">
+                    <h4>XAI Heatmap</h4>
+                    <img src="/{{ report.heatmap_url }}" alt="Heatmap matrix analysis">
+                </div>
+                {% endif %}
+            </div>
+            <div class="metric-card" style="margin-top: 14px;">
+                <div class="metric-label">Face Swap Explanations</div>
+                <ul class="list">
+                    {% if report.faceswap_analysis and report.faceswap_analysis.explanations %}
+                        {% for reason in report.faceswap_analysis.explanations %}
+                        <li>{{ reason }}</li>
+                        {% endfor %}
+                    {% else %}
+                        <li>Dedicated face-swap evidence was not generated for this scan.</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            Generated by Authentix Neural Engine | Timestamp: {{ report.upload_date }}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,204 @@
+/* AUTHENTIX MASTER THEMES ENGINE (v2.0) */
+:root {
+  /* DARK THEME (DEFAULT) */
+  --bg: #060812;
+  --panel: #0f1528;
+  --panel-rgb: 15, 21, 40;
+  --text: #e8f0ff;
+  --muted: #98a5c5;
+  --cyan: #00e5ff;
+  --red: #ff4d6d;
+  --green: #36e39a;
+  --amber: #ffc857;
+  --border: #29314a;
+  --nav-bg: rgba(15, 21, 40, 0.95);
+  --header-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --btn-shadow: 0 0 20px rgba(0, 198, 255, 0.3);
+  --surface-tint: rgba(18, 26, 49, 0.4);
+  --glow: 0 0 15px rgba(0, 229, 255, 0.3);
+  --grid-color: rgba(0, 229, 255, 0.06);
+}
+
+[data-theme="light"] {
+  /* LIGHT THEME (Suggested: Clean, High-Contrast) */
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --panel-rgb: 255, 255, 255;
+  --text: #0f172a;
+  --muted: #475569;
+  --cyan: #2563eb; /* Use Accent Blue for Light Mode */
+  --red: #dc2626;
+  --green: #16a34a;
+  --amber: #d97706;
+  --border: #dbe3ee;
+  --nav-bg: rgba(255, 255, 255, 0.95);
+  --header-shadow: 0 4px 15px rgba(15, 23, 42, 0.05);
+  --card-shadow: 0 6px 24px rgba(15, 23, 42, 0.08);
+  --btn-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  --surface-tint: #f8fafc;
+  --glow: none;
+  --grid-color: rgba(15, 23, 42, 0.02);
+}
+
+/* NORMALIZE GLOBAL COMPONENTS FOR TRANSIENCY */
+body {
+  transition: background 0.3s ease, color 0.3s ease !important;
+  color: var(--text) !important;
+}
+
+/* Only flatten background in light mode */
+[data-theme="light"] body {
+  background-color: var(--bg) !important;
+  background-image: none !important;
+}
+
+.bg-grid {
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px) !important;
+}
+
+.panel, .preview-card, .history-card, .result-card, .about-panel, .xai-report-card {
+  background: var(--panel) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--card-shadow) !important;
+  color: var(--text) !important;
+}
+
+.subtitle, .small-muted, .meta-label, .metric-label {
+  color: var(--muted) !important;
+  opacity: 1 !important;
+}
+
+/* UPLOAD AREA */
+.drop-zone {
+  border: 2px dashed var(--border) !important;
+  background: var(--surface-tint) !important;
+  color: var(--text) !important;
+}
+.drop-zone:hover {
+  border-color: var(--cyan) !important;
+  background: rgba(var(--panel-rgb), 0.5) !important;
+}
+
+.preview-meta-item {
+  background: var(--surface-tint) !important;
+  border-color: var(--border) !important;
+}
+
+.preview-media-container {
+  background: #000 !important;
+  border-color: var(--border) !important;
+}
+
+/* BUTTONS & CONTROLS */
+.btn-primary {
+  background: var(--cyan) !important;
+  color: #fff !important;
+  box-shadow: var(--btn-shadow) !important;
+  border: none !important;
+}
+
+.btn-secondary {
+  background: var(--surface-tint) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.remove-btn {
+  background: rgba(255, 77, 109, 0.1);
+  color: var(--red) !important;
+  border: 1px solid var(--red) !important;
+}
+
+.mode-btn {
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  background: var(--surface-tint) !important;
+}
+
+input[name="mode"]:checked + .mode-label {
+  background: var(--cyan) !important;
+  color: white !important;
+}
+
+/* NAVIGATION */
+.main-nav {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  background: var(--nav-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--border) !important;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: var(--header-shadow) !important;
+}
+
+.nav-container {
+  width: min(1100px, 92vw);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--cyan) !important;
+  text-decoration: none;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav-link {
+  color: var(--text) !important;
+  font-weight: 700 !important;
+  opacity: 0.7;
+}
+
+.nav-link.active, .nav-link:hover {
+  color: var(--cyan) !important;
+  opacity: 1 !important;
+}
+
+.theme-toggle-btn {
+  background: var(--surface-tint) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* DASHBOARD SPECIFICS */
+.metric-value, .meta-value {
+  color: var(--cyan) !important;
+}
+
+[data-theme="light"] .hero h1 {
+  text-shadow: none !important;
+  color: var(--text) !important;
+}
+
+[data-theme="light"] .warning-banner {
+  background: rgba(220, 38, 38, 0.05) !important;
+  border-color: rgba(220, 38, 38, 0.1) !important;
+  color: var(--red) !important;
+}

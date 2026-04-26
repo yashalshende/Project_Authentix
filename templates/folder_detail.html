@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ dataset.name }} | AUTHENTIX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}?v=1" />
+    <style>
+      .stats-grid,
+      .subfolder-grid,
+      .preview-grid {
+        display: grid;
+        gap: 1rem;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        margin-top: 1.2rem;
+      }
+      .stat-card,
+      .subfolder-card {
+        background: var(--surface-tint);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem;
+      }
+      .stat-card strong {
+        display: block;
+        color: var(--cyan);
+        font-size: 1.1rem;
+      }
+      .subfolder-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        margin-top: 1.2rem;
+      }
+      .subfolder-card {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+      }
+      .preview-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: 1rem;
+      }
+      .preview-grid img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+      .split-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-top: 1rem;
+      }
+      .split-card {
+        background: rgba(0, 0, 0, 0.16);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.8rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+
+    <nav class="main-nav">
+      <div class="nav-container">
+        <a href="/" class="nav-logo">AUTHENTIX</a>
+        <div class="nav-links">
+          <a href="/" class="nav-link">Home</a>
+          <a href="/folders" class="nav-link active">Folders</a>
+          <a href="/history" class="nav-link">History</a>
+          <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Theme">🌓</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container" style="padding: 2rem 0 3rem;">
+      <section class="panel">
+        <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap;">
+          <div>
+            <div style="color:var(--muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08rem;">Folders / {{ dataset.name }}</div>
+            <h1 style="margin:0.35rem 0 0; font-family: Orbitron, sans-serif; font-size:1.45rem; letter-spacing:0.12rem; color:var(--cyan);">{{ dataset.name }}</h1>
+            <p style="margin:0.6rem 0 0; color:var(--muted); max-width:760px;">
+              This dataset is stored directly in the project and can be opened from the folders directory during demos.
+            </p>
+          </div>
+          <a href="/folders" class="btn-secondary" style="text-decoration:none;">All folders</a>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <strong>{{ "{:,}".format(dataset.total_images) }}</strong>
+            <span style="color:var(--muted); font-size:0.85rem;">Total extracted images</span>
+          </div>
+          {% if 'real' in dataset.labels %}
+          <div class="stat-card">
+            <strong>{{ "{:,}".format(dataset.real_count) }}</strong>
+            <span style="color:var(--muted); font-size:0.85rem;">Real images</span>
+          </div>
+          <div class="stat-card">
+            <strong>{{ "{:,}".format(dataset.fake_count) }}</strong>
+            <span style="color:var(--muted); font-size:0.85rem;">Fake images</span>
+          </div>
+          {% endif %}
+          {% for split_total in dataset.split_totals %}
+          <div class="stat-card">
+            <strong>{{ "{:,}".format(split_total.count) }}</strong>
+            <span style="color:var(--muted); font-size:0.85rem;">{{ split_total.label }} split</span>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 style="color:var(--cyan); letter-spacing:0.08rem; text-transform:uppercase;">Subfolders</h2>
+        <div class="subfolder-grid">
+          {% for section in label_sections %}
+          <a class="subfolder-card" href="{{ url_for('dataset_label_page', dataset_slug=dataset.slug, label=section.label) }}">
+            <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start;">
+              <div>
+                <div style="font-size:1rem; font-weight:800; color:var(--text);">{{ section.title }}</div>
+                <div style="margin-top:0.4rem; color:var(--muted); font-size:0.88rem;">
+                  Open this folder and browse the dataset images directly.
+                </div>
+              </div>
+              <div style="color:var(--cyan); font-weight:800; white-space:nowrap;">{{ "{:,}".format(section.count) }}</div>
+            </div>
+
+            {% if section.split_counts %}
+            <div class="split-grid">
+              {% for split in section.split_counts %}
+              <div class="split-card">
+                <div style="color:var(--muted); font-size:0.78rem;">{{ split.label }}</div>
+                <div style="margin-top:0.35rem; color:var(--text); font-weight:800;">
+                  {{ "{:,}".format(split.count) }}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="preview-grid">
+              {% for image in section.preview_images %}
+              <img src="{{ url_for('serve_folder_file', relative_path=image.relative_path) }}" alt="{{ image.name }}" loading="lazy" />
+              {% endfor %}
+            </div>
+
+            <div style="margin-top:1rem; color:var(--cyan); font-weight:700; font-size:0.9rem;">Open folder</div>
+          </a>
+          {% endfor %}
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const setTheme = (theme) => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('authentix-theme', theme);
+        const btn = document.getElementById('theme-toggle');
+        if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+      };
+      setTheme(localStorage.getItem('authentix-theme') || 'dark');
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+      });
+    </script>
+  </body>
+</html>

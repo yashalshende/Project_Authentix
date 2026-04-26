@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ gallery.title }} | AUTHENTIX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}?v=1" />
+    <style>
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-top: 1.2rem;
+      }
+      .image-card {
+        background: var(--surface-tint);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0.8rem;
+      }
+      .image-card img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+      .pagination {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 1.5rem;
+        align-items: center;
+      }
+      .page-link {
+        min-width: 40px;
+        height: 40px;
+        padding: 0 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        text-decoration: none;
+        border: 1px solid var(--border);
+        background: var(--surface-tint);
+        color: var(--text);
+        font-weight: 700;
+      }
+      .page-link.active {
+        background: var(--cyan);
+        color: #04111e;
+        border-color: var(--cyan);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+
+    <nav class="main-nav">
+      <div class="nav-container">
+        <a href="/" class="nav-logo">AUTHENTIX</a>
+        <div class="nav-links">
+          <a href="/" class="nav-link">Home</a>
+          <a href="/folders" class="nav-link active">Folders</a>
+          <a href="/history" class="nav-link">History</a>
+          <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Theme">🌓</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container" style="padding: 2rem 0 3rem;">
+      <section class="panel">
+        <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap;">
+          <div>
+            <div style="color:var(--muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.08rem;">
+              Folders / {{ dataset.name }} / {{ gallery.label }}
+            </div>
+            <h1 style="margin:0.35rem 0 0; font-family: Orbitron, sans-serif; font-size:1.4rem; letter-spacing:0.12rem; color:var(--cyan);">{{ gallery.title }}</h1>
+            <p style="margin:0.6rem 0 0; color:var(--muted);">
+              Showing {{ "{:,}".format(gallery.total_images) }} images in the {{ gallery.label }} subfolder.
+            </p>
+          </div>
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <a href="{{ url_for('dataset_folder_page', dataset_slug=dataset.slug) }}" class="btn-secondary" style="text-decoration:none;">Back to dataset folder</a>
+            {% if dataset.labels|length > 1 %}
+            {% set alt_label = dataset.labels[1] if gallery.label == dataset.labels[0] else dataset.labels[0] %}
+            <a href="{{ url_for('dataset_label_page', dataset_slug=dataset.slug, label=alt_label) }}" class="btn-secondary" style="text-decoration:none;">
+              Open {{ alt_label|title }}
+            </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="gallery-grid">
+          {% for image in gallery.images %}
+          <article class="image-card">
+            <img src="{{ url_for('serve_folder_file', relative_path=image.relative_path) }}" alt="{{ image.name }}" loading="lazy" />
+            <div style="margin-top:0.75rem; font-size:0.82rem; color:var(--text); word-break:break-word;">{{ image.name }}</div>
+          </article>
+          {% endfor %}
+        </div>
+
+        <div class="pagination">
+          {% if gallery.has_previous %}
+          <a class="page-link" href="{{ url_for('dataset_label_page', dataset_slug=dataset.slug, label=gallery.label, page=gallery.previous_page) }}">Prev</a>
+          {% endif %}
+
+          {% for page_number in gallery.visible_pages %}
+          <a class="page-link {{ 'active' if page_number == gallery.current_page else '' }}" href="{{ url_for('dataset_label_page', dataset_slug=dataset.slug, label=gallery.label, page=page_number) }}">
+            {{ page_number }}
+          </a>
+          {% endfor %}
+
+          {% if gallery.has_next %}
+          <a class="page-link" href="{{ url_for('dataset_label_page', dataset_slug=dataset.slug, label=gallery.label, page=gallery.next_page) }}">Next</a>
+          {% endif %}
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const setTheme = (theme) => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('authentix-theme', theme);
+        const btn = document.getElementById('theme-toggle');
+        if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+      };
+      setTheme(localStorage.getItem('authentix-theme') || 'dark');
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+      });
+    </script>
+  </body>
+</html>

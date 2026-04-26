@@ -1,0 +1,161 @@
+{
+  "version": 3,
+  "signature": [
+    {
+      "manifest": "D:\\Project Authentix\\folders\\celebDF\\dataset_manifest.json",
+      "manifest_mtime_ns": 1776666677350765700,
+      "labels": {
+        "real": {
+          "count": 50360,
+          "mtime_ns": 1776666319051236700
+        },
+        "fake": {
+          "count": 50671,
+          "mtime_ns": 1776666304977522700
+        }
+      }
+    },
+    {
+      "manifest": "D:\\Project Authentix\\folders\\DFDC Challenge\\dataset_manifest.json",
+      "manifest_mtime_ns": 1776653386549846600,
+      "labels": {
+        "real": {
+          "count": 26728,
+          "mtime_ns": 1776653386549846600
+        },
+        "fake": {
+          "count": 97919,
+          "mtime_ns": 1776653382191749000
+        }
+      }
+    },
+    {
+      "manifest": "D:\\Project Authentix\\folders\\Face Forencics\\dataset_manifest.json",
+      "manifest_mtime_ns": 1776670052301172800,
+      "labels": {}
+    }
+  ],
+  "profile": {
+    "available": true,
+    "datasets": [
+      {
+        "name": "CelebDF",
+        "slug": "celebdf",
+        "labels": {
+          "real": {
+            "sample_count": 12,
+            "validation_count": 4,
+            "file_count": 50360
+          },
+          "fake": {
+            "sample_count": 12,
+            "validation_count": 4,
+            "file_count": 50671
+          }
+        }
+      },
+      {
+        "name": "DFDC Challenge",
+        "slug": "dfdc-challenge",
+        "labels": {
+          "real": {
+            "sample_count": 12,
+            "validation_count": 4,
+            "file_count": 26728
+          },
+          "fake": {
+            "sample_count": 12,
+            "validation_count": 4,
+            "file_count": 97919
+          }
+        }
+      }
+    ],
+    "reference_datasets": [
+      "CelebDF",
+      "DFDC Challenge"
+    ],
+    "calibration_mode": "labeled_reference",
+    "max_files_per_label": 16,
+    "feature_stats": {
+      "real": {
+        "global_score": {
+          "mean": 36.517633,
+          "std": 2.875856,
+          "count": 24
+        },
+        "freq_score": {
+          "mean": 16.394167,
+          "std": 1.640995,
+          "count": 24
+        },
+        "blocking_score": {
+          "mean": 0.00473,
+          "std": 0.001055,
+          "count": 24
+        },
+        "edge_energy": {
+          "mean": 0.058419,
+          "std": 0.01264,
+          "count": 24
+        },
+        "noise_score": {
+          "mean": 0.00229,
+          "std": 0.000596,
+          "count": 24
+        },
+        "color_divergence": {
+          "mean": 0.111399,
+          "std": 0.042831,
+          "count": 24
+        }
+      },
+      "fake": {
+        "global_score": {
+          "mean": 37.429525,
+          "std": 3.58418,
+          "count": 24
+        },
+        "freq_score": {
+          "mean": 16.798333,
+          "std": 1.470506,
+          "count": 24
+        },
+        "blocking_score": {
+          "mean": 0.004392,
+          "std": 0.001483,
+          "count": 24
+        },
+        "edge_energy": {
+          "mean": 0.054871,
+          "std": 0.018086,
+          "count": 24
+        },
+        "noise_score": {
+          "mean": 0.002251,
+          "std": 0.000985,
+          "count": 24
+        },
+        "color_divergence": {
+          "mean": 0.116588,
+          "std": 0.047627,
+          "count": 24
+        }
+      }
+    },
+    "calibrated_thresholds": {
+      "image": 37.0,
+      "video": 36.0
+    },
+    "validation_summary": {
+      "available": true,
+      "validation_samples": 16,
+      "selected_threshold": 37.0,
+      "video_threshold": 36.0,
+      "accuracy": 0.5625,
+      "recall": 0.75,
+      "precision": 0.5455,
+      "f1": 0.6316
+    }
+  }
+}
