@@ -2,7 +2,10 @@ services:
   - type: web
     name: authentix
     env: python
-    plan: starter
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 300
     autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
