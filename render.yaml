@@ -1,11 +1,32 @@
 services:
   - type: web
     name: authentix
-    env: python
+    env: docker
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 300
+    region: oregon
     autoDeploy: true
+
+    # Docker build settings
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+
+    # Network
+    healthCheckPath: /health
+
+    # Runtime environment variables
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.10.0
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DEMO_MODE_ACTIVE
+        value: "true"
+      # Add any secrets below (set values in Render Dashboard → Environment)
+      # - key: SECRET_KEY
+      #   generateValue: true
+
+    # Persistent disk for model checkpoints and data
+    disk:
+      name: authentix-data
+      mountPath: /app/model_data
+      sizeGB: 1

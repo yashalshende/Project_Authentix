@@ -6,7 +6,7 @@ import os
 
 
 class ModelConfig:
-    DEMO_MODE_ACTIVE = False  # Set to False to utilize the PyTorch model for higher accuracy instead of heuristics
+    DEMO_MODE_ACTIVE = True  # Set to False to utilize the PyTorch model for higher accuracy instead of heuristics
     
     # 1. Inputs
     IMG_SIZE = 256

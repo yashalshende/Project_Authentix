@@ -1,12 +1,13 @@
 FROM python:3.10-slim
 
-# Install system dependencies for OpenCV
-RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+# Install minimal system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
+    libsm6 \
+    libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up user for HF spaces
+# Set up non-root user
 RUN useradd -m -u 1000 user
 USER user
 ENV PATH="/home/user/.local/bin:$PATH"
@@ -16,5 +17,6 @@ COPY --chown=user requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=user . /app
-EXPOSE 7860
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:7860", "--timeout", "300", "--workers", "1", "--threads", "4"]
+ENV PORT=10000
+EXPOSE $PORT
+CMD gunicorn app:app --bind 0.0.0.0:$PORT --timeout 300 --workers 1 --threads 4

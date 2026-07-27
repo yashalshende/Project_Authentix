@@ -227,6 +227,10 @@ def _preview_images(dataset_slug, label, limit=6):
         else f"{dataset['relative_storage_root']}/{name}",
     } for name in _list_label_filenames(dataset_slug, label)[:limit]]
 
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok"}), 200
+
 @app.route('/')
 def index():
     return render_template('index.html', datasets=_get_dataset_catalog()["datasets"])
